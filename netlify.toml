@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# The API lives in a Netlify Server (netlify/server/index.ts) and only
+# handles /api/* requests. Everything else is the static frontend.
+
+[dev]
+  command = "npx vite --port 5173"
+  targetPort = 5173
+  framework = "#custom"

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subtitle Finder — subtitles for movies & series, in one ZIP</title>
+    <meta name="description" content="Search movies and TV series, pick languages and episodes, and download all subtitles as one tidy ZIP." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230e0d0b'/><rect x='6' y='19' width='20' height='4' rx='1' fill='%23f6d31b'/><rect x='9' y='25' width='14' height='3' rx='1' fill='%23f6d31b'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=IBM+Plex+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="masthead">
+      <div class="brand">
+        <span class="timecode">00:00:01,000 --&gt; 00:00:04,000</span>
+        <h1>Subtitle<span>Finder</span></h1>
+        <p class="tagline">Search a film or a series. Pick languages and episodes. Get <em>one</em> tidy ZIP.</p>
+      </div>
+      <div id="status" class="status" role="status">Checking connection…</div>
+    </header>
+
+    <section class="settings" aria-label="Subtitle settings">
+      <div class="setting">
+        <div class="setting-head">
+          <h2>Languages</h2>
+          <span id="lang-count" class="hint"></span>
+        </div>
+        <div id="languages" class="chips" role="group" aria-label="Subtitle languages"></div>
+      </div>
+      <div class="setting format">
+        <h2>Format</h2>
+        <div class="toggle" role="radiogroup" aria-label="Subtitle format">
+          <label><input type="radio" name="format" value="srt" checked /><span>.srt</span></label>
+          <label><input type="radio" name="format" value="vtt" /><span>.vtt</span></label>
+        </div>
+      </div>
+    </section>
+
+    <main class="layout">
+      <section class="search-area" aria-label="Search">
+        <form id="search-form" class="search" novalidate>
+          <label class="sr-only" for="q">Movie or series title</label>
+          <input id="q" name="q" type="search" placeholder="Title of a movie or series…" autocomplete="off" maxlength="100" />
+          <select id="type" name="type" aria-label="Type">
+            <option value="all">All</option>
+            <option value="movie">Movies</option>
+            <option value="series">Series</option>
+          </select>
+          <button type="submit" class="btn primary">Search</button>
+        </form>
+        <p id="search-error" class="field-error" role="alert"></p>
+        <div id="results" class="results" aria-live="polite"></div>
+      </section>
+
+      <aside class="queue" aria-label="Batch queue">
+        <div class="queue-head">
+          <h2>Queue</h2>
+          <button id="clear-queue" class="btn ghost small" type="button">Clear</button>
+        </div>
+        <ol id="queue-list" class="queue-list"></ol>
+        <button id="start" class="btn primary wide" type="button">Find &amp; download subtitles</button>
+        <p id="start-error" class="field-error" role="alert"></p>
+      </aside>
+    </main>
+
+    <section id="run" class="panel run" hidden aria-label="Download progress">
+      <div class="run-head">
+        <h2 id="run-title">Working…</h2>
+        <button id="cancel" class="btn ghost small" type="button">Cancel</button>
+      </div>
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+      <p class="run-meta"><span id="progress-count" class="mono">0 / 0</span> <span id="progress-msg"></span></p>
+    </section>
+
+    <section id="review" class="panel review" hidden aria-label="Review subtitles">
+      <div class="review-head">
+        <div>
+          <h2>Review &amp; compile</h2>
+          <p id="review-meta" class="hint"></p>
+        </div>
+        <div class="review-actions">
+          <button id="build-zip" class="btn primary" type="button">Build ZIP</button>
+          <a id="zip-link" class="btn ghost" hidden>Download again</a>
+        </div>
+      </div>
+      <div id="review-list" class="review-list"></div>
+      <details id="failures" class="failures" hidden>
+        <summary></summary>
+        <ul id="failure-list"></ul>
+      </details>
+    </section>
+
+    <dialog id="series-dialog" class="dialog">
+      <form id="series-form" method="dialog" novalidate>
+        <header>
+          <span class="kicker">Series</span>
+          <h2 id="series-title"></h2>
+        </header>
+
+        <fieldset>
+          <legend>Seasons</legend>
+          <div id="season-picker" class="season-picker"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Episodes</legend>
+          <label class="radio"><input type="radio" name="ep-mode" value="all" checked /> All episodes</label>
+          <label class="radio range">
+            <input type="radio" name="ep-mode" value="range" /> Episodes
+            <input id="ep-from" type="number" min="1" max="999" value="1" aria-label="From episode" />
+            to
+            <input id="ep-to" type="number" min="1" max="999" value="5" aria-label="To episode" />
+          </label>
+        </fieldset>
+
+        <p id="series-error" class="field-error" role="alert"></p>
+        <footer>
+          <button type="button" id="series-cancel" class="btn ghost">Cancel</button>
+          <button type="submit" id="series-add" class="btn primary">Add to queue</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <footer class="credits">
+      Subtitles from <a href="https://www.opensubtitles.com" target="_blank" rel="noopener">OpenSubtitles.com</a>.
+      Your language and format choices are remembered in this browser.
+    </footer>
+
+    <script type="module" src="/src/app.ts"></script>
+  </body>
+</html>
